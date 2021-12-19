@@ -29,6 +29,10 @@ public:
     std::string to_string() {
         return std::string("mock delay task: ") + std::to_string(id);
     }
+
+    void exec() {
+        std::cout << to_string() << std::endl;
+    }
 private:
     static int64_t get_current_time() {
         return std::chrono::high_resolution_clock::now().time_since_epoch().count();
