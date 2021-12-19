@@ -18,8 +18,9 @@ public:
     }
 
     bool write_to_chan(char *bytes, int size) {
-        if(write(write_fd, bytes, size))
+        if(write(write_fd, bytes, size) == -1) {
             return false;
+        }
         return true;
     }
 

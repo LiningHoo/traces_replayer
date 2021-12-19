@@ -19,7 +19,7 @@ struct ExpireTimeComparator {
 
 class delay_queue {
 private:
-    std::mutex mu;
+    std::mutex mu, door_lock;
     std::priority_queue<delay_task*, std::vector<delay_task*>, ExpireTimeComparator> task_queue;
     channel newest;
 public:
@@ -28,15 +28,17 @@ public:
     }
 
     void push(delay_task *task) {
-        std::lock_guard<std::mutex> raii_lock(mu);
+        mu.lock();
         bool is_top = task_queue.empty() || task_queue.top()->get_exec_time() > task->get_exec_time();
         task_queue.push(task);
         if (is_top) {
             newest.write_to_chan(NEWEST_ELEM, sizeof(NEWEST_ELEM));
         }
+        mu.unlock();
     }
 
     delay_task* get_first() {
+        std::lock_guard<std::mutex> lock(door_lock);
     fetch_first:
         mu.lock();
         if (task_queue.empty()) {
@@ -55,7 +57,7 @@ public:
             mu.unlock();
             channel expire_chan; 
             std::thread timer([&](){
-                int left_time = current_first_task->left_time();
+                int64_t left_time = current_first_task->left_time();
                 std::this_thread::sleep_for(std::chrono::nanoseconds(left_time));
                 expire_chan.write_to_chan(EXPIRE, sizeof(EXPIRE));
             });
@@ -64,7 +66,7 @@ public:
             fd_set event_fds;
             FD_SET(expire_chan.get_read_fd(), &event_fds);
             FD_SET(newest.get_read_fd(), &event_fds);
-            int fd = select(4, &event_fds, nullptr, nullptr, nullptr);
+            int fd = select(1024, &event_fds, nullptr, nullptr, nullptr);
             char* bytes;
             if (fd == newest.get_read_fd()) {
                 bytes = newest.read_from_chan(sizeof(NEWEST_ELEM));

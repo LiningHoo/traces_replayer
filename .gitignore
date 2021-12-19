@@ -1,3 +1,5 @@
 delay_queue_test
 channel_test
 csv_test
+msr_loader_test
+msr_replayer_test
