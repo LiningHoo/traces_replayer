@@ -2,6 +2,7 @@
 
 #include <queue>
 #include <mutex>
+#include <condition_variable>
 #include <vector>
 #include <unistd.h>
 #include <thread>
@@ -22,6 +23,7 @@ private:
     std::mutex mu, door_lock;
     std::priority_queue<delay_task*, std::vector<delay_task*>, ExpireTimeComparator> task_queue;
     channel newest;
+    std::condition_variable cond;
 public:
     ~delay_queue() {
         newest.close_chan();
@@ -51,6 +53,7 @@ public:
         delay_task* current_first_task = task_queue.top();
         if (current_first_task->is_expire()) {
             task_queue.pop();
+            cond.notify_all();
             mu.unlock();
             return current_first_task;
         } else {
@@ -78,5 +81,12 @@ public:
 
             goto fetch_first;
         }
+    }
+
+    void wait_down_util(int size) {
+        std::unique_lock<std::mutex> lock(mu);
+        cond.wait(lock, [&]()->bool {
+            return task_queue.size() <= size;
+        });
     }
 };

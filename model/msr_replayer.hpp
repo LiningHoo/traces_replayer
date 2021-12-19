@@ -37,17 +37,15 @@ public:
                 for (const auto& task : tasks) {
                     task_queue.push(task);
                 }
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                task_queue.wait_down_util(10);
             }
         });
         task_producer.detach();
 
-        // std::mutex mu;
 
         for (auto& worker : workers) {
             worker = new std::thread([&](){
                 while(true) {
-                    // std::lock_guard<std::mutex> lock(mu);
                     msr_task *task = (msr_task*)task_queue.get_first();
                     task->exec();
                     delete task;
