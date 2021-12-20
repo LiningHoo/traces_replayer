@@ -65,7 +65,7 @@ public:
         }
         int64_t position = std::min(offset % dev->get_size(), dev->get_size() - len);
         lseek(dev->get_fd(), position, SEEK_SET);
-        bool sucess;
+        bool sucess = false;
         if (m_io_type == IO_WRITE) {
             int ret = write(dev->get_fd(), buffer, len);
             sucess = ret > 0;
