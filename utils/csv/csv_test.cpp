@@ -4,7 +4,7 @@
 #include "csv.hpp"
 
 int main() {
-    io::CSVReader<7> in("sample.csv");
+    io::CSVReader<7> in("../../resources/sample.csv");
     // in.read_header(io::ignore_extra_column, "vendor", "size", "speed");
     int64_t timestamp, offset, len, resp_time;
     int volume;

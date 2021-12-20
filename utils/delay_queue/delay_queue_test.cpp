@@ -33,6 +33,8 @@ public:
     void exec() {
         std::cout << to_string() << std::endl;
     }
+
+    bool exec(device *dev) {}
 private:
     static int64_t get_current_time() {
         return std::chrono::high_resolution_clock::now().time_since_epoch().count();

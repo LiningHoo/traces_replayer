@@ -3,3 +3,5 @@ channel_test
 csv_test
 msr_loader_test
 msr_replayer_test
+main_test
+test_dev
