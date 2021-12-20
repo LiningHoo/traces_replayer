@@ -58,20 +58,20 @@ public:
         // int64_t now = std::chrono::high_resolution_clock::now().time_since_epoch().count();
         // if (now - exec_time > 1e6)
         //     std::cout << "time diff: " + std::to_string(now - exec_time) + "\n";
-
-        char *buffer = new char[len];
-        for (int i=0; i<len; ++i) {
+        int64_t length = std::min(dev->get_size(), len);
+        char *buffer = new char[length];
+        for (int i=0; i<length; ++i) {
             buffer[i] = '0';
         }
-        int64_t position = std::min(offset % dev->get_size(), dev->get_size() - len);
+        int64_t position = std::min(offset % dev->get_size(), dev->get_size() - length);
         lseek(dev->get_fd(), position, SEEK_SET);
         bool sucess = false;
         if (m_io_type == IO_WRITE) {
-            int ret = write(dev->get_fd(), buffer, len);
+            int ret = write(dev->get_fd(), buffer, length);
             sucess = ret > 0;
         }
         else if (m_io_type == IO_READ) {
-            int ret = read(dev->get_fd(), buffer, len);
+            int ret = read(dev->get_fd(), buffer, length);
             sucess = ret > 0;
         }
         delete[] buffer;
