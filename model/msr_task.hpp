@@ -4,7 +4,11 @@
 #include <chrono>
 #include <iostream>
 #include <algorithm>
+#include <fcntl.h>
+#include <unistd.h>
+#include <cstring>
 
+#include "./device.hpp"
 #include "../utils/delay_queue/delay_task.hpp"
 
 typedef std::string io_type;
@@ -48,6 +52,31 @@ public:
         // }
         // std::cout << "time diff: " + std::to_string(now - exec_time) + "\n";
         std::cout << to_string() + "\n";
+    }
+
+    bool exec(device *dev) {
+        // int64_t now = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+        // if (now - exec_time > 1e6)
+        //     std::cout << "time diff: " + std::to_string(now - exec_time) + "\n";
+
+        char *buffer = new char[len];
+        for (int i=0; i<len; ++i) {
+            buffer[i] = '0';
+        }
+        int64_t position = std::min(offset % dev->get_size(), dev->get_size() - len);
+        lseek(dev->get_fd(), position, SEEK_SET);
+        bool sucess;
+        if (m_io_type == IO_WRITE) {
+            int ret = write(dev->get_fd(), buffer, len);
+            sucess = ret > 0;
+        }
+        else if (m_io_type == IO_READ) {
+            int ret = read(dev->get_fd(), buffer, len);
+            sucess = ret > 0;
+        }
+        delete[] buffer;
+
+        return sucess;
     }
 private:
     static int64_t get_current_time() {

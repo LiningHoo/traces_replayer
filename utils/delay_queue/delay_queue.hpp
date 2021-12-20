@@ -83,10 +83,11 @@ public:
         }
     }
 
-    void wait_down_util(int size) {
+    int wait_down_util(int size) {
         std::unique_lock<std::mutex> lock(mu);
         cond.wait(lock, [&]()->bool {
             return task_queue.size() <= size;
         });
+        return task_queue.size();
     }
 };

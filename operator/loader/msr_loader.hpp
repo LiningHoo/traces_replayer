@@ -23,7 +23,8 @@ public:
     }
 
     ~msr_loader() {
-        delete source;
+        if (source)
+            delete source;
     }
 
     delay_task* load_one_task() {
